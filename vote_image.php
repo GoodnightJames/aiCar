@@ -1,37 +1,29 @@
 <?php
-header('Content-Type: application/json');
+$db = new mysqli('localhost', 'root', '', 'aiCar');
 
-$data = json_decode(file_get_contents('php://input'), true);
+if ($db->connect_error) {
+    die("Connection failed: " . $db->connect_error);
+}
 
-if (!isset($data['id'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $imageId = $_POST['imageId'];
+
+    // Update the vote count for the selected image
+    $updateSql = "UPDATE images SET votes = votes + 1, last_vote = NOW() WHERE id = $imageId";
+    $db->query($updateSql);
+
+    // Fetch the updated image data
+    $selectSql = "SELECT id, votes FROM images WHERE id = $imageId";
+    $result = $db->query($selectSql);
+    $imageData = $result->fetch_assoc();
+
+    // Return the updated vote count as JSON response
+    echo json_encode(['votes' => $imageData['votes']]);
+} else {
+    // Invalid request method, return error
     http_response_code(400);
-    echo json_encode(['error' => 'Invalid request']);
-    exit();
+    echo 'Invalid request method.';
 }
 
-$servername = 'localhost';
-$username = 'root';
-$password = '';
-$dbname = 'aiCar';
-
-try {
-    $db = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8mb4", $username, $password);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    $id = $data['id'];
-
-    $sql = "UPDATE images SET votes = votes + 1 WHERE id = ?";
-    $stmt = $db->prepare($sql);
-    $stmt->execute([$id]);
-
-    if ($stmt->rowCount() > 0) {
-        echo json_encode(['success' => true]);
-    } else {
-        echo json_encode(['error' => 'Failed to update vote']);
-    }
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database connection error']);
-    exit();
-}
+$db->close();
 ?>
