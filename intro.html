@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>aiBenz - Introduction</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+    
+        #image-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin-top: 50px;
+            padding: 10px;
+        }
+    
+        .image-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            flex: 0 0 45%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+    
+        .image-wrapper img {
+            cursor: pointer;
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+    
+        .splash-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            z-index: 9999;
+        }
+    
+        .splash-container.closed {
+            opacity: 0;
+            pointer-events: none;
+        }
+    
+        .splash-content {
+            max-width: 800px;
+            padding: 20px;
+            text-align: center;
+            color: #fff;
+        }
+    
+        h1 {
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    
+        p {
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+    
+        .cta-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+    
+        .cta-button:hover {
+            background-color: #0069d9;
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-container">
+        <div class="splash-content">
+            <h1>Embarking on a Thrilling Collaboration</h1>
+            <p>Join me, James Goodnight, a commercial photographer and art director, on an exciting journey with ChatGPT4 and Midjourney to envision the future of the Mercedes Benz EQS.</p>
+            <p>Your voice matters! Help shape the vision by clicking on your favorite image from the four stunning options presented below.</p>
+            <a href="#" id="start-voting-button" class="cta-button">Start Voting</a>
+        </div>
+    </div>
+
+    <div id="image-container">
+        <!-- Images will be inserted here by JavaScript -->
+    </div>
+
+    <script>
+        // Global variables to store the images, current index, and current round
+        var images = [];
+        var currentIndex = 0;
+        var currentRound = 1;
+
+        // Function to close the splash page
+        function closeSplashPage() {
+            var splashContainer = document.querySelector('.splash-container');
+            splashContainer.classList.add('closed');
+        }
+
+        // Function to fetch the images from the server
+        function getImages() {
+            fetch('get_images.php')
+                .then(response => response.json())
+                .then(data => {
+                    images = data;
+                    displayImages();
+                })
+                .catch(error => console.error(error));
+        }
+
+        // Function to display the images
+        function displayImages() {
+            const imageContainer = document.getElementById('image-container');
+            imageContainer.innerHTML = '';
+
+            if (currentIndex < images.length) {
+                const numCols = 2;
+                const imageWidth = 100 / numCols;
+
+                for (let i = currentIndex; i < currentIndex + 4; i++) {
+                    if (i < images.length) {
+                        const imageWrapper = document.createElement('div');
+                        imageWrapper.classList.add('image-wrapper');
+                        imageWrapper.style.width = `${imageWidth}%`;
+
+                        const img = document.createElement('img');
+                        img.src = images[i].image_path;
+                        img.alt = 'Image';
+                        img.addEventListener('click', () => voteImage(images[i].id));
+
+                        imageWrapper.appendChild(img);
+                        imageContainer.appendChild(imageWrapper);
+                    }
+                }
+            } else {
+                const noImagesMessage = document.createElement('p');
+                noImagesMessage.textContent = 'No more images available.';
+                imageContainer.appendChild(noImagesMessage);
+            }
+        }
+
+        // Function to handle image voting
+        function voteImage(imageId) {
+            console.log('Vote counted for imageId:', imageId);
+
+            // Add your logic here to handle the vote and move to the next set
+
+            currentIndex += 4;
+
+            // Check if the current round is complete
+            if (currentIndex >= images.length) {
+                console.log('Round ' + currentRound + ' complete.');
+
+                // Check if the final round is reached
+                if (currentRound === 1) {
+                    console.log('Final round reached.');
+                    console.log('Remaining images:', images);
+
+                    // You can implement the logic for the final round as needed
+
+                    return;
+                }
+
+                currentRound++;
+                currentIndex = 0;
+
+                // Shuffle the images for the next round
+                shuffleImages();
+            }
+
+            // Display the new set of images
+            displayImages();
+        }
+
+        // Function to shuffle the images
+        function shuffleImages() {
+            for (let i = images.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [images[i], images[j]] = [images[j], images[i]];
+            }
+        }
+
+        // Add an event listener to the Start Voting button
+        var startVotingButton = document.getElementById('start-voting-button');
+        startVotingButton.addEventListener('click', closeSplashPage);
+
+        // Fetch the images and start the voting process
+        getImages();
+    </script>
+</body>
+</html>
