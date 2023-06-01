@@ -49,7 +49,7 @@
         var currentRound = 1;
 
         function getImages() {
-            fetch('get_images.php')
+            fetch('images.json')
                 .then(response => response.json())
                 .then(data => {
                     images = data;
