@@ -1,35 +1,3 @@
-<?php
-$db = new mysqli('localhost', 'root', '', 'aiCar');
-
-if ($db->connect_error) {
-    die("Connection failed: " . $db->connect_error);
-}
-
-$sql = "SELECT id, image_path, votes FROM images";
-$result = $db->query($sql);
-
-$images = [];
-while ($row = $result->fetch_assoc()) {
-    $imagePath = "images/" . basename($row['image_path']); // Assuming the images are stored in the 'images' folder
-    $votes = $row['votes'];
-
-    $images[] = [
-        'imagePath' => $imagePath,
-        'votes' => $votes
-    ];
-}
-
-// Sort images based on votes
-usort($images, function($a, $b) {
-    return $b['votes'] - $a['votes'];
-});
-
-$top10 = array_slice($images, 0, 10);
-$bottom10 = array_slice($images, -10, 10);
-
-$db->close();
-?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -77,29 +45,15 @@ $db->close();
 <body>
     <div class="section">
         <h3 class="section-title">Top 10 Images</h3>
-        <div class="image-grid">
-            <?php foreach ($top10 as $index => $image) : ?>
-                <div class="image-grid-item">
-                    <a href="<?php echo $image['imagePath']; ?>" data-fancybox="top-group" data-caption="Votes: <?php echo $image['votes']; ?>">
-                        <img src="<?php echo $image['imagePath']; ?>" alt="Image">
-                    </a>
-                    <span>Votes: <?php echo $image['votes']; ?></span>
-                </div>
-            <?php endforeach; ?>
+        <div id="top-image-grid" class="image-grid">
+            <!-- Images will be inserted here by JavaScript -->
         </div>
     </div>
 
     <div class="section">
         <h3 class="section-title">Bottom 10 Images</h3>
-        <div class="image-grid">
-            <?php foreach ($bottom10 as $index => $image) : ?>
-                <div class="image-grid-item">
-                    <a href="<?php echo $image['imagePath']; ?>" data-fancybox="bottom-group" data-caption="Votes: <?php echo $image['votes']; ?>">
-                        <img src="<?php echo $image['imagePath']; ?>" alt="Image">
-                    </a>
-                    <span>Votes: <?php echo $image['votes']; ?></span>
-                </div>
-            <?php endforeach; ?>
+        <div id="bottom-image-grid" class="image-grid">
+            <!-- Images will be inserted here by JavaScript -->
         </div>
     </div>
 
@@ -107,6 +61,40 @@ $db->close();
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
     <script>
         $(document).ready(function() {
+            $.getJSON('images.json', function(data) {
+                // Sort images based on votes
+                data.sort(function(a, b) {
+                    return b.votes - a.votes;
+                });
+
+                var topImages = data.slice(0, 10);
+                var bottomImages = data.slice(-10);
+
+                displayImages(topImages, 'top-image-grid');
+                displayImages(bottomImages, 'bottom-image-grid');
+            });
+
+            function displayImages(images, containerId) {
+                var imageContainer = document.getElementById(containerId);
+                imageContainer.innerHTML = '';
+
+                images.forEach(function(image) {
+                    var imageWrapper = document.createElement('div');
+                    imageWrapper.classList.add('image-grid-item');
+
+                    var img = document.createElement('img');
+                    img.src = image.imagePath;
+                    img.alt = 'Image';
+
+                    var caption = document.createElement('span');
+                    caption.textContent = 'Votes: ' + image.votes;
+
+                    imageWrapper.appendChild(img);
+                    imageWrapper.appendChild(caption);
+                    imageContainer.appendChild(imageWrapper);
+                });
+            }
+
             $('[data-fancybox="top-group"]').fancybox({
                 infobar: true,
                 buttons: [
