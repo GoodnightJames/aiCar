@@ -23,5 +23,5 @@
         "votes": 0,
         "last_vote": ""
     }
-    // Add more image objects as needed
+    // Add more image objects as needed, make sure to include a comma after each object
 ]
