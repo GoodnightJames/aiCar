@@ -1,0 +1,27 @@
+[
+    {
+        "id": 1,
+        "image_path": "images/image1.jpg",
+        "votes": 0,
+        "last_vote": ""
+    },
+    {
+        "id": 2,
+        "image_path": "images/image2.jpg",
+        "votes": 0,
+        "last_vote": ""
+    },
+    {
+        "id": 3,
+        "image_path": "images/image3.jpg",
+        "votes": 0,
+        "last_vote": ""
+    },
+    {
+        "id": 4,
+        "image_path": "images/image4.jpg",
+        "votes": 0,
+        "last_vote": ""
+    }
+    // Add more image objects as needed
+]
