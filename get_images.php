@@ -19,7 +19,7 @@ while ($row = $result->fetch_assoc()) {
     $vote_decay = $votes * pow(0.5, $time_difference / 86400);  // Half-life of 1 day
 
     $row['votes'] = $vote_decay;
-    $row['image_path'] = 'images/' . basename($row['image_path']); // Update the image path
+    $row['image_path'] = '/images/' . basename($row['image_path']); // Update the image path
     $images[] = $row;
 }
 
