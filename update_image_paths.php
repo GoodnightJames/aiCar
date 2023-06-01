@@ -5,25 +5,27 @@ if ($db->connect_error) {
     die("Connection failed: " . $db->connect_error);
 }
 
-$imagesPath = '/Applications/XAMPP/xamppfiles/htdocs/aiCar/images/';
+// Retrieve the existing image paths from the database
+$sql = "SELECT id, image_path FROM images";
+$result = $db->query($sql);
 
-$images = glob($imagesPath . '*.*');
-
-// Reset the image_path field for all records
-$sqlReset = "UPDATE images SET image_path = ''";
-$db->query($sqlReset);
-
-foreach ($images as $image) {
-    $currentFileName = basename($image);
-    $imageId = substr($currentFileName, 0, strpos($currentFileName, '.'));
-    $newImagePath = 'images/' . $currentFileName;
-
-    $sql = "UPDATE images SET image_path = ? WHERE id = ?";
-    $stmt = $db->prepare($sql);
-    $stmt->bind_param('si', $newImagePath, $imageId);
-    $stmt->execute();
+$images = [];
+while ($row = $result->fetch_assoc()) {
+    $id = $row['id'];
+    $imagePath = 'images/' . basename($row['image_path']); // Assuming the images are stored in the 'images' folder
+    $images[] = [
+        'id' => $id,
+        'image_path' => $imagePath
+    ];
 }
 
-$stmt->close();
+// Update the image paths in the database
+foreach ($images as $image) {
+    $id = $image['id'];
+    $imagePath = $image['image_path'];
+    $updateSql = "UPDATE images SET image_path = '$imagePath' WHERE id = $id";
+    $db->query($updateSql);
+}
+
 $db->close();
 ?>
